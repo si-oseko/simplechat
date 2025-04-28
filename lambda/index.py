@@ -63,7 +63,7 @@ def lambda_handler(event, context):
             EXTERNAL_API_URL,
             data=payload_json,
             headers=headers,
-            method='POST'
+            method='GET'
         )
 
         api_response_text = "Sorry, I could not get a response."
