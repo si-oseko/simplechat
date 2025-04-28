@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 
 # 外部APIのURLを指定 (ngrok の URL に変更)
-EXTERNAL_API_URL = "https://7071-35-240-222-95.ngrok-free.app/"
+EXTERNAL_API_URL = "https://7071-35-240-222-95.ngrok-free.app/generate"
 
 # --- BedrockクライアントやMODEL_IDは不要 ---
 # bedrock_client = None
@@ -60,7 +60,7 @@ def lambda_handler(event, context):
             EXTERNAL_API_URL,
             data=payload_json,
             headers=headers,
-            method='GET'
+            method='POST'
         )
 
         api_response_text = "Sorry, I could not get a response."
