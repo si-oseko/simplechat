@@ -3,12 +3,9 @@ import json
 import os
 import urllib.request
 import urllib.error
-# import re # Bedrock関連を使わないなら不要
-# import boto3 # Bedrock関連を使わないなら不要
-# from botocore.exceptions import ClientError # Bedrock関連を使わないなら不要
 
 # 外部APIのURLを指定 (ngrok の URL に変更)
-EXTERNAL_API_URL = "https://7071-35-240-222-95.ngrok-free.app/chat"
+EXTERNAL_API_URL = "https://7071-35-240-222-95.ngrok-free.app/"
 
 # --- BedrockクライアントやMODEL_IDは不要 ---
 # bedrock_client = None
