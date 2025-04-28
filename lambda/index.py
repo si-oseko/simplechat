@@ -5,7 +5,7 @@ import urllib.request
 import urllib.error
 
 # 外部APIのURLを指定 (ngrok の URL に変更)
-EXTERNAL_API_URL = "https://7071-35-240-222-95.ngrok-free.app/generate"
+EXTERNAL_API_URL = "https://81ae-34-142-185-58.ngrok-free.app/generate"
 
 # --- BedrockクライアントやMODEL_IDは不要 ---
 # bedrock_client = None
