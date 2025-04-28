@@ -4,29 +4,20 @@ import os
 import urllib.request
 import urllib.error
 
-# 外部APIのURLを指定 (ngrok の URL に変更)
+# 外部APIのURLを指定 (ngrok の URL に変更) - OK
 EXTERNAL_API_URL = "https://81ae-34-142-185-58.ngrok-free.app/generate"
-
-# --- BedrockクライアントやMODEL_IDは不要 ---
-# bedrock_client = None
-# MODEL_ID = os.environ.get("MODEL_ID", "us.amazon.nova-lite-v1:0")
-# def extract_region_from_arn(arn): ... も不要
 
 def lambda_handler(event, context):
     try:
-        # --- Bedrockクライアント初期化は不要 ---
-        # global bedrock_client
-        # ...
-
         print("Received event:", json.dumps(event))
 
-        # --- Cognito認証情報の取得は元のコードから流用可能 (必要なら) ---
+        # --- Cognito認証情報の取得 (変更なし) ---
         user_info = None
         if 'requestContext' in event and 'authorizer' in event['requestContext']:
             user_info = event['requestContext']['authorizer']['claims']
             print(f"Authenticated user: {user_info.get('email') or user_info.get('cognito:username')}")
 
-        # リクエストボディの解析 (元のコードと同じ)
+        # --- リクエストボディの解析 (変更なし) ---
         try:
             body = json.loads(event['body'])
             message = body['message']
@@ -41,11 +32,11 @@ def lambda_handler(event, context):
             }
 
         print("Received message (prompt):", message)
-        print("Calling external API:", EXTERNAL_API_URL) # ここで指定したURLが表示される
+        print("Calling external API:", EXTERNAL_API_URL)
 
-        # --- ここから urllib.request を使った外部API呼び出し (Bedrock部分を置き換え) ---
+        # --- urllib.request を使った外部API呼び出し ---
         payload_dict = {
-            "prompt": message # シンプルな形式に変更済み
+            "prompt": message
         }
         payload_json = json.dumps(payload_dict).encode('utf-8')
 
@@ -54,7 +45,6 @@ def lambda_handler(event, context):
             "Accept": "application/json",
             "ngrok-skip-browser-warning": "true" # 必要に応じて
         }
-        # 認証不要なのでAPIキー関連は削除済み
 
         req = urllib.request.Request(
             EXTERNAL_API_URL,
@@ -63,7 +53,7 @@ def lambda_handler(event, context):
             method='POST'
         )
 
-        api_response_text = "Sorry, I could not get a response."
+        api_response_text = "Sorry, I could not get a response." # ← 初期値設定
         api_response_data = None
         response_body_str = ""
 
@@ -92,10 +82,10 @@ def lambda_handler(event, context):
                 api_response_data = json.loads(response_body_str)
                 print("External API response:", json.dumps(api_response_data, default=str))
 
-                # APIの応答形式に合わせて調整
-                api_response_text = api_response_data.get("completion") or api_response_data.get("response", "Sorry, the response format was unexpected.")
+                # --- 3. 応答テキストの抽出を正しいキーで実行 ---
+                api_response_text = api_response_data.get("generated_text", "Sorry, the response format was unexpected.") # ← 正しいキーに修正
 
-        # (以下、エラーハンドリングとレスポンス返却部分は前の回答と同じ)
+        # --- (except ブロックは変更なし) ---
         except urllib.error.HTTPError as e:
             print(f"HTTP Error calling external API: {e.code} {e.reason}")
             try:
@@ -122,34 +112,30 @@ def lambda_handler(event, context):
             raise Exception(f"An unexpected error occurred while calling the external API: {e}")
         # --- 外部API呼び出しここまで ---
 
-        # --- 会話履歴の処理は削除 (シンプルな応答) ---
-        # messages = conversation_history.copy()
-        # messages.append(...)
-
-        # 成功レスポンスの返却 (シンプル版)
+        # --- (成功レスポンス返却部分は変更なし) ---
         return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Amz-Security-Token,ngrok-skip-browser-warning", # 認証不要なら X-Api-Key は削除
+                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Amz-Security-Token,ngrok-skip-browser-warning",
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
             "body": json.dumps({
                 "success": True,
-                "response": api_response_text
+                "response": api_response_text # 正しく抽出されたテキストが入る
             })
         }
 
+    # --- (最後の except Exception は変更なし) ---
     except Exception as error:
         print("Error:", str(error))
-        # (エラーレスポンス部分は元のコードと同様)
         return {
             "statusCode": 500,
             "headers": {
                 "Content-Type": "application/json",
                 "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,ngrok-skip-browser-warning",
+                "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Amz-Security-Token,ngrok-skip-browser-warning",
                 "Access-Control-Allow-Methods": "OPTIONS,POST"
             },
             "body": json.dumps({
